@@ -27,6 +27,10 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         model = User
 
 
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)
+
+
 @app.route('/')
 def index():
     return "Hello world"
@@ -46,15 +50,16 @@ def add_user():
 
 @app.route('/all_users', methods=['GET'])
 def all_users():
-    users = db.session.query(User).first()
-    users_schema = UserSchema()
-    data = users_schema.dump(users)
-    return jsonify(data)
+    users = db.session.query(User).all()
+    return users_schema.jsonify(users)
 
 
-@app.route('/show_user/<id>', methods=['GET'])
-def show_user(id):
-    pass
+@app.route('/show_user/<user_id>', methods=['GET'])
+def show_user(user_id):
+    user = db.session.query(User).filter(User.id == user_id).first()
+    if user:
+        return user_schema.jsonify(user)
+    return f"No user of id {user_id}"
 
 
 if __name__ == '__main__':
