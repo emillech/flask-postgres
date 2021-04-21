@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-import json
 
 
 app = Flask(__name__)
@@ -62,5 +61,15 @@ def show_user(user_id):
     return f"No user of id {user_id}"
 
 
+@app.route('/delete_user/<user_id>', methods=['POST'])
+def delete_user(user_id):
+    user = db.session.query(User).filter(User.id == user_id).first()
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        return f'User of id {user_id} deleted'
+    return f"No user of id {user_id}"
+
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0')
