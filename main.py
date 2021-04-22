@@ -3,8 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 
 
+SERVICE_NAME = 'db'
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://postgres:postgres@db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -68,6 +69,26 @@ def delete_user(user_id):
         db.session.delete(user)
         db.session.commit()
         return f'User of id {user_id} deleted'
+    return f"No user of id {user_id}"
+
+
+@app.route('/search', methods=['GET'])
+def search():
+    first_name = request.args.get("first_name")
+    user = db.session.query(User).filter(User.first_name == first_name).first()
+    if user:
+        return user_schema.jsonify(user)
+    return "No such user"
+
+
+@app.route('/edit_user/<user_id>', methods=['PUT'])
+def edit_user(user_id):
+    user = db.session.query(User).filter(User.id == user_id).first()
+    if user:
+        first_name = request.json['first_name']
+        user.first_name = first_name
+        db.session.commit()
+        return f'User of id {user_id} edited'
     return f"No user of id {user_id}"
 
 
